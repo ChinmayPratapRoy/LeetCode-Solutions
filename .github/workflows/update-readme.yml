@@ -1,0 +1,42 @@
+name: Update README
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Count Files
+        run: |
+          EASY=$(find Easy -type f | wc -l)
+          MEDIUM=$(find Medium -type f | wc -l)
+          HARD=$(find Hard -type f | wc -l)
+
+          TOTAL=$((EASY + MEDIUM + HARD))
+
+          sed -i "s/<!-- EASY_COUNT -->.*<!-- EASY_COUNT_END -->/<!-- EASY_COUNT -->$EASY<!-- EASY_COUNT_END -->/" README.md
+          sed -i "s/<!-- MEDIUM_COUNT -->.*<!-- MEDIUM_COUNT_END -->/<!-- MEDIUM_COUNT -->$MEDIUM<!-- MEDIUM_COUNT_END -->/" README.md
+          sed -i "s/<!-- HARD_COUNT -->.*<!-- HARD_COUNT_END -->/<!-- HARD_COUNT -->$HARD<!-- HARD_COUNT_END -->/" README.md
+          sed -i "s/<!-- TOTAL_COUNT -->.*<!-- TOTAL_COUNT_END -->/<!-- TOTAL_COUNT -->$TOTAL<!-- TOTAL_COUNT_END -->/" README.md
+
+      - name: Commit Changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add README.md
+
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto Update README"
+            git push
+          fi
